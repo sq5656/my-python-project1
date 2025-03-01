@@ -1,0 +1,28 @@
+import os
+import pytesseract
+from PIL import Image
+import re
+
+# 设置 Tesseract 路径（Windows 需要指定路径）
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+# 图片文件夹路径
+folder_path = r'C:\Users\Administrator\Desktop\202531'
+
+# 遍历文件夹中的图片
+for filename in os.listdir(folder_path):
+    if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+        img_path = os.path.join(folder_path, filename)
+        
+        # 打开图片并识别文字
+        text = pytesseract.image_to_string(Image.open(img_path), lang='chi_sim+eng')  # 中英文混合
+        text_clean = re.sub(r'[\n\\/:*?"<>|]', '', text.strip())[:50]  # 清理非法字符
+        
+        # 生成新文件名
+        if text_clean:
+            new_name = f"{text_clean}{os.path.splitext(filename)[1]}"
+            new_path = os.path.join(folder_path, new_name)
+            os.rename(img_path, new_path)
+            print(f"重命名成功：{filename} -> {new_name}")
+        else:
+            print(f"跳过无文字图片：{filename}")
